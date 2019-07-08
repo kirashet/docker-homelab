@@ -1,5 +1,5 @@
 ---
-version: '3'
+version: '3.2'
 
 services:
   mon_prometheus:
@@ -7,10 +7,12 @@ services:
     container_name: mon_prometheus
     restart: unless-stopped
     volumes:
-      - $PWD/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     depends_on:
       - mon_node-exporter
       - mon_cadvisor
+    ports:
+      - "9090:9090"
 
   mon_node-exporter:
     image: prom/node-exporter:latest
@@ -45,19 +47,10 @@ services:
       - /var/docker/data/monitoring/grafana:/var/lib/grafana
     ports:
       - 3000:3000
-    user: "1000" # USER ID des Docker Users anpassen
+    user: "root" # USER ID des Docker Users anpassen
     depends_on:
       - mon_prometheus
-    labels:
-      - "traefik.backend=grafana"
-      - "traefik.enable=true"
-      - "traefik.frontend.rule=Host:grafana.example.com"
-      - "traefik.port=8080"
-      - "traefik.docker.network=traefik_proxy"
 
 networks:
-  traefik_proxy:
-    external:
-      name: traefik_proxy
   default:
     driver: bridge
